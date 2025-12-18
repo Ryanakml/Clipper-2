@@ -87,6 +87,9 @@ Prisma.NullTypes = {
  * Enums
  */
 exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
+  ReadUncommitted: 'ReadUncommitted',
+  ReadCommitted: 'ReadCommitted',
+  RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable'
 });
 
@@ -179,6 +182,11 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
@@ -206,7 +214,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/ryanakmalpasya/Documents/BS/Freelance/PROJECTS/Portofolio/clipper 2/fronend/generated/prisma",
+      "value": "/Users/ryanakmalpasya/Documents/BS/Freelance/PROJECTS/Portofolio/clipper 3/fronend/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -220,7 +228,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/ryanakmalpasya/Documents/BS/Freelance/PROJECTS/Portofolio/clipper 2/fronend/prisma/schema.prisma",
+    "sourceFilePath": "/Users/ryanakmalpasya/Documents/BS/Freelance/PROJECTS/Portofolio/clipper 3/fronend/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -233,7 +241,7 @@ const config = {
   "datasourceNames": [
     "db"
   ],
-  "activeProvider": "sqlite",
+  "activeProvider": "postgresql",
   "inlineDatasources": {
     "db": {
       "url": {
@@ -242,8 +250,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below\n  // Further reading:\n  // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema\n  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Post {\n  id        Int      @id @default(autoincrement())\n  name      String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  createdBy   User   @relation(fields: [createdById], references: [id])\n  createdById String\n\n  @@index([name])\n}\n\n// Necessary for Next auth\nmodel Account {\n  id                       String  @id @default(cuid())\n  userId                   String\n  type                     String\n  provider                 String\n  providerAccountId        String\n  refresh_token            String? // @db.Text\n  access_token             String? // @db.Text\n  expires_at               Int?\n  token_type               String?\n  scope                    String?\n  id_token                 String? // @db.Text\n  session_state            String?\n  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)\n  refresh_token_expires_in Int?\n\n  @@unique([provider, providerAccountId])\n}\n\nmodel Session {\n  id           String   @id @default(cuid())\n  sessionToken String   @unique\n  userId       String\n  expires      DateTime\n  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n\nmodel User {\n  id               String    @id @default(cuid())\n  name             String?\n  email            String    @unique\n  emailVerified    DateTime?\n  password         String\n  credits          Int       @default(10)\n  stripeCustomerId String?   @unique\n  image            String?\n  accounts         Account[]\n  sessions         Session[]\n  posts            Post[]\n\n  uploadedFiles UploadedFile[]\n  clips         Clip[]\n  payments      Payment[]\n}\n\nmodel UploadedFile {\n  id          String   @id @default(cuid())\n  s3Key       String\n  displayName String?\n  uploaded    Boolean  @default(false)\n  status      String   @default(\"queued\") // processing, processed, no credits\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  clips Clip[]\n\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId String\n\n  @@index([s3Key])\n}\n\nmodel Clip {\n  id        String   @id @default(cuid())\n  s3Key     String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  uploadedFile   UploadedFile? @relation(fields: [uploadedFileId], references: [id], onDelete: Cascade)\n  uploadedFileId String?\n\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId String\n\n  @@index([s3Key])\n}\n\nmodel VerificationToken {\n  identifier String\n  token      String   @unique\n  expires    DateTime\n\n  @@unique([identifier, token])\n}\n\nmodel Payment {\n  id               String    @id @default(cuid())\n  orderId          String    @unique\n  status           String    @default(\"pending\") // pending | paid | failed | expired\n  amount           Int\n  currency         String    @default(\"IDR\")\n  creditsPurchased Int\n  priceId          String\n  gateway          String    @default(\"midtrans\")\n  snapRedirectUrl  String?\n  paidAt           DateTime?\n  createdAt        DateTime  @default(now())\n  updatedAt        DateTime  @updatedAt\n\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId String\n\n  @@index([userId, createdAt])\n}\n",
-  "inlineSchemaHash": "e270acd2b44c70cc2a36598354306092c63ebfea6a6b0e8ad3c11ce29aa23034",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below\n  // Further reading:\n  // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema\n  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Post {\n  id        Int      @id @default(autoincrement())\n  name      String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  createdBy   User   @relation(fields: [createdById], references: [id])\n  createdById String\n\n  @@index([name])\n}\n\n// Necessary for Next auth\nmodel Account {\n  id                       String  @id @default(cuid())\n  userId                   String\n  type                     String\n  provider                 String\n  providerAccountId        String\n  refresh_token            String? // @db.Text\n  access_token             String? // @db.Text\n  expires_at               Int?\n  token_type               String?\n  scope                    String?\n  id_token                 String? // @db.Text\n  session_state            String?\n  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)\n  refresh_token_expires_in Int?\n\n  @@unique([provider, providerAccountId])\n}\n\nmodel Session {\n  id           String   @id @default(cuid())\n  sessionToken String   @unique\n  userId       String\n  expires      DateTime\n  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n\nmodel User {\n  id               String    @id @default(cuid())\n  name             String?\n  email            String    @unique\n  emailVerified    DateTime?\n  password         String\n  credits          Int       @default(10)\n  stripeCustomerId String?   @unique\n  image            String?\n  accounts         Account[]\n  sessions         Session[]\n  posts            Post[]\n\n  uploadedFiles UploadedFile[]\n  clips         Clip[]\n  payments      Payment[]\n}\n\nmodel UploadedFile {\n  id          String   @id @default(cuid())\n  s3Key       String\n  displayName String?\n  uploaded    Boolean  @default(false)\n  status      String   @default(\"queued\") // processing, processed, no credits\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  clips Clip[]\n\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId String\n\n  @@index([s3Key])\n}\n\nmodel Clip {\n  id        String   @id @default(cuid())\n  s3Key     String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  uploadedFile   UploadedFile? @relation(fields: [uploadedFileId], references: [id], onDelete: Cascade)\n  uploadedFileId String?\n\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId String\n\n  @@index([s3Key])\n}\n\nmodel VerificationToken {\n  identifier String\n  token      String   @unique\n  expires    DateTime\n\n  @@unique([identifier, token])\n}\n\nmodel Payment {\n  id               String    @id @default(cuid())\n  orderId          String    @unique\n  status           String    @default(\"pending\") // pending | paid | failed | expired\n  amount           Int\n  currency         String    @default(\"IDR\")\n  creditsPurchased Int\n  priceId          String\n  gateway          String    @default(\"midtrans\")\n  snapRedirectUrl  String?\n  paidAt           DateTime?\n  createdAt        DateTime  @default(now())\n  updatedAt        DateTime  @updatedAt\n\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId String\n\n  @@index([userId, createdAt])\n}\n",
+  "inlineSchemaHash": "c9798de15a91e50b2a4c7700ad6a2f6de08311bfb782dd4da1c0ef7e83daaa2d",
   "copyEngine": true
 }
 config.dirname = '/'

@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-    provider = "sqlite"
+    provider = "postgresql"
     // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
     // Further reading:
     // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
@@ -56,51 +56,50 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String   @unique
-    emailVerified DateTime?
-    password      String
-    credits       Int @default(10)
-    stripeCustomerId String? @unique
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    posts         Post[]
+    id               String    @id @default(cuid())
+    name             String?
+    email            String    @unique
+    emailVerified    DateTime?
+    password         String
+    credits          Int       @default(10)
+    stripeCustomerId String?   @unique
+    image            String?
+    accounts         Account[]
+    sessions         Session[]
+    posts            Post[]
 
     uploadedFiles UploadedFile[]
-    clips Clip[]
-    payments Payment[]
+    clips         Clip[]
+    payments      Payment[]
 }
 
-
 model UploadedFile {
-    id String @id @default(cuid())
-    s3Key String
+    id          String   @id @default(cuid())
+    s3Key       String
     displayName String?
-    uploaded Boolean @default(false)
-    status String @default("queued") // processing, processed, no credits
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    uploaded    Boolean  @default(false)
+    status      String   @default("queued") // processing, processed, no credits
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
     clips Clip[]
 
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId String
 
     @@index([s3Key])
 }
 
 model Clip {
-    id String @id @default(cuid())
-    s3Key String
+    id        String   @id @default(cuid())
+    s3Key     String
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    uploadedFile UploadedFile? @relation(fields: [uploadedFileId], references: [id], onDelete: Cascade)
+    uploadedFile   UploadedFile? @relation(fields: [uploadedFileId], references: [id], onDelete: Cascade)
     uploadedFileId String?
 
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId String
 
     @@index([s3Key])
@@ -115,18 +114,18 @@ model VerificationToken {
 }
 
 model Payment {
-    id               String   @id @default(cuid())
-    orderId          String   @unique
-    status           String   @default("pending") // pending | paid | failed | expired
+    id               String    @id @default(cuid())
+    orderId          String    @unique
+    status           String    @default("pending") // pending | paid | failed | expired
     amount           Int
-    currency         String   @default("IDR")
+    currency         String    @default("IDR")
     creditsPurchased Int
     priceId          String
-    gateway          String   @default("midtrans")
+    gateway          String    @default("midtrans")
     snapRedirectUrl  String?
     paidAt           DateTime?
-    createdAt        DateTime @default(now())
-    updatedAt        DateTime @updatedAt
+    createdAt        DateTime  @default(now())
+    updatedAt        DateTime  @updatedAt
 
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId String
