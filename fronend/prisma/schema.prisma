@@ -3,8 +3,8 @@
 
 generator client {
     provider      = "prisma-client-js"
-    output        = "../generated/prisma"
-    engineType    = "binary"
+    // Hapus baris output = "../generated/prisma"
+    // Hapus engineType = "binary" (biarkan default "library" lebih cepat di serverless, atau pakai binary jika memang perlu tapi tanpa output custom)
     binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
