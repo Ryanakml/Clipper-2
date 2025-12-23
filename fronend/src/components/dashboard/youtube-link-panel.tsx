@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Loader2, Link2, Wand2, Clock3, ShieldCheck } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Badge } from "../ui/badge";
 import { toast } from "sonner";
 
 export function YoutubeLinkPanel() {

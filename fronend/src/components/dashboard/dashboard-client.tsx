@@ -12,20 +12,10 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { Loader2 } from "lucide-react";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { generateUploadUrl } from "~/actions/s3";
 import { toast } from "sonner";
 import { processVideo } from "~/actions/generation";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
-import { Badge } from "../ui/badge";
 import { useRouter } from "next/navigation";
 import { ClipDisplay } from "./clip-display";
 import { cn } from "~/lib/utils";

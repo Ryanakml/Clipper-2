@@ -1,3 +1,6 @@
+import type { BaseSyntheticEvent } from "react";
+import type { FieldErrors, UseFormRegister } from "react-hook-form";
+import Link from "next/link";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -9,14 +12,14 @@ import {
   FieldSeparator,
 } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import Link from "next/link";
+import type { SignUpFormValue } from "~/schemas/auth";
 import { SignupImage } from "./sign-up-image";
 
 type SignupFormUIProps = {
-  register: any;
-  errors: any;
+  register: UseFormRegister<SignUpFormValue>;
+  errors: FieldErrors<SignUpFormValue>;
   isSubmitting: boolean;
-  onSubmit: (e?: React.BaseSyntheticEvent) => void;
+  onSubmit: (e?: BaseSyntheticEvent) => void | Promise<void>;
 };
 
 export function SignupFormUI({

@@ -11,7 +11,7 @@
 # 
 
 # database
-/prisma/db.sqlite
+/prisma/db.sqlitep
 /prisma/db.sqlite-journal
 db.sqlite
 

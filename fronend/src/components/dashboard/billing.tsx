@@ -44,9 +44,10 @@ type BillingPayment = {
   creditsPurchased: number;
   amount: number;
   orderId: string;
-  status: PaymentStatus | string;
+  status: PaymentStatus;
   createdAt: Date;
 };
+type BillingPaymentInput = Omit<BillingPayment, "status"> & { status: unknown };
 
 const plans: PricingPlan[] = [
   {
@@ -94,11 +95,34 @@ const plans: PricingPlan[] = [
   },
 ];
 
-export function BillingContent({ payments }: { payments: BillingPayment[] }) {
+const PAYMENT_STATUSES: PaymentStatus[] = [
+  "pending",
+  "paid",
+  "failed",
+  "expired",
+];
+
+function normalizePaymentStatus(status: unknown): PaymentStatus {
+  if (PAYMENT_STATUSES.includes(status as PaymentStatus)) {
+    return status as PaymentStatus;
+  }
+  return "pending";
+}
+
+export function BillingContent({
+  payments,
+}: {
+  payments: BillingPaymentInput[];
+}) {
   const formatter = new Intl.DateTimeFormat("id-ID", {
     dateStyle: "medium",
     timeStyle: "short",
   });
+
+  const normalizedPayments: BillingPayment[] = payments.map((payment) => ({
+    ...payment,
+    status: normalizePaymentStatus(payment.status),
+  }));
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8">
@@ -162,7 +186,7 @@ export function BillingContent({ payments }: { payments: BillingPayment[] }) {
           </div>
         </CardHeader>
         <CardContent>
-          {payments.length === 0 ? (
+          {normalizedPayments.length === 0 ? (
             <p className="text-muted-foreground text-sm">
               Belum ada transaksi. Lakukan pembayaran pertama untuk melihat
               riwayat di sini.
@@ -179,7 +203,7 @@ export function BillingContent({ payments }: { payments: BillingPayment[] }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {payments.map((payment) => (
+                  {normalizedPayments.map((payment) => (
                     <TableRow key={payment.id}>
                       <TableCell className="font-medium">
                         {payment.creditsPurchased} credits · Rp
@@ -248,8 +272,8 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
   );
 }
 
-function PaymentStatusBadge({ status }: { status: PaymentStatus | string }) {
-  const normalized = (status ?? "pending") as PaymentStatus;
+function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
+  const normalized = status ?? "pending";
 
   const copy =
     normalized === "paid"
