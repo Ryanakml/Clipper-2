@@ -47,11 +47,14 @@ export const authConfig = {
         const email = credentials.email as string;
         const password = credentials.password as string;
 
+        console.log("LOGIN EMAIL:", email);
+
         const user = await db.user.findUnique({
           where: {
             email,
           },
         });
+        console.log("USER FOUND:", user);
 
         if (!user) {
           throw new Error("No user found");

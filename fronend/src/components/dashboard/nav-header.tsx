@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
+import Image from "next/image";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,18 +11,28 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+} from "../ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 import { signOut } from "next-auth/react";
-import AppThemeSwitcher from "./theme-switcher";
+import AppThemeSwitcher from "../theme-switcher";
 
 const NavHeader = ({ credits, email }: { credits: number; email: string }) => {
   return (
     <header className="bg-background sticky top-0 z-10 flex justify-center border-b">
       <div className="container flex h-16 items-center justify-between px-4 py-2">
-        <Link href="/dashboard" className="flex items-center">
-          <div className="font-sans text-xl font-medium tracking-tight">
-            <span className="text-foreground">Logo</span>
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <div className="relative h-8 w-8">
+            <Image
+              src="/favicon.ico"
+              alt="Clipper logo"
+              fill
+              className="rounded-md"
+              sizes="32px"
+              priority
+            />
+          </div>
+          <div className="font-sans text-xl font-semibold tracking-tight">
+            ClipperAI
           </div>
         </Link>
 
@@ -33,17 +44,17 @@ const NavHeader = ({ credits, email }: { credits: number; email: string }) => {
               variant="secondary"
               className="h-8 px-3 py-1.5 text-xs font-medium"
             >
-              {credits} credits
+              {credits} kredit
             </Badge>
 
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               asChild
               className="h-8 text-xs font-medium"
             >
-              <Link href="/dashboard/billing">Buy more</Link>
-            </Button>
+              <Link href="/dashboard/billing">Beli kredit</Link>
+            </Button> */}
           </div>
 
           <DropdownMenu>
@@ -63,14 +74,14 @@ const NavHeader = ({ credits, email }: { credits: number; email: string }) => {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/billing">Billing</Link>
+                <Link href="/dashboard/billing">Tagihan</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => signOut({ redirectTo: "/sign-in" })}
+                onClick={() => signOut({ redirectTo: "/" })}
                 className="text-destructive cursor-pointer"
               >
-                Sign out
+                Keluar
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -30,10 +30,12 @@ next-env.d.ts
 *.mov
 *.mkv
 *.avi
+*.txt
 backend/*.mp4
+.venv/
 
 # debug
-npm-debug.log*
+npm-debug.log*  
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*

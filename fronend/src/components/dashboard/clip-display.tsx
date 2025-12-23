@@ -4,7 +4,7 @@ import type { Clip } from "~/../generated/prisma/client";
 import { Download, Loader2, Play, AlertCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 
 function ClipCard({ clip }: { clip: Clip }) {
   const [isInView, setIsInView] = useState(false);
@@ -77,7 +77,7 @@ function ClipCard({ clip }: { clip: Clip }) {
 
   return (
     <div ref={cardRef} className="flex flex-col gap-2">
-      <div className="bg-muted relative aspect-[9/16] overflow-hidden rounded-md">
+      <div className="bg-muted relative aspect-9/16 overflow-hidden rounded-md">
         {isLoading ? (
           // Skeleton loader yang menarik
           <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-4">
@@ -157,9 +157,9 @@ export function ClipDisplay({ clips }: { clips: Clip[] }) {
           <Play className="text-muted-foreground/40 h-12 w-12" />
         </div>
         <div className="space-y-1 text-center">
-          <p className="text-muted-foreground font-medium">No clips yet</p>
+          <p className="text-muted-foreground font-medium">Belum ada clip</p>
           <p className="text-muted-foreground/60 text-sm">
-            Generate your first clip to get started
+            Coba untuk upload dan buat clip baru
           </p>
         </div>
       </div>

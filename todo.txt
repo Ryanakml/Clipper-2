@@ -1,0 +1,8 @@
+Enroll
+- add watermark/caption says "Clipped by clipperai.com".
+- add forgot password with direct new pass logic and ui
+- add release soon at button at youtube url to clip
+- add convex and clerk
+- finishing beli kredit page, midtrans service deployment and fix status updates
+
+Done

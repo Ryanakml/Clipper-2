@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import DashboardClient from "../../components/dashboard-client";
+import DashboardClient from "../../components/dashboard/dashboard-client";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 

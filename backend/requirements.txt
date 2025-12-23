@@ -1,7 +1,11 @@
 tqdm
+# These specific versions work perfectly on Python 3.11
 torch==2.0.1
 torchaudio==2.0.2
+torchvision==0.15.2
 numpy>=1.23.0,<2.0
+
+# Dependencies
 opencv-python
 ffmpegcv    
 python_speech_features
@@ -9,14 +13,15 @@ scipy
 scenedetect
 scikit-learn
 gdown
-torchvision
 pandas
 transformers>=4.30.0,<4.50.0
-accelerate
+accelerate==0.27.2
 datasets>=2.16.0
 pyarrow>=15.0.0
 google-genai
 pysubs2
 boto3
 fastapi[standard]
+
+# WhisperX last
 whisperx
