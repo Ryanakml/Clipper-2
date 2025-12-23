@@ -23,8 +23,6 @@ image = (
         "torchaudio==2.0.2",
         "torchvision==0.15.2",
         "numpy<2.0",
-    )
-    .pip_install(
         "whisperx==3.1.1",
         "boto3",
         "opencv-python-headless",

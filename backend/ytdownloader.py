@@ -1,6 +1,6 @@
 from pytubefix import YouTube
 
-url = "https://www.youtube.com/watch?v=1ziIpehWMiI"
+url = "https://www.youtube.com/watch?v=donDxq9Eg-s&pp=ygUQcG9kY2FzdCAzMCBtZW5pdA%3D%3D"
 
 yt = YouTube(url)
 
