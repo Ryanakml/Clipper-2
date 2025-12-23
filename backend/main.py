@@ -14,40 +14,87 @@ import uuid
 from typing import Optional
 
 import modal
+import torch
+from fastapi import Request
 
 image = (
     modal.Image.debian_slim(python_version="3.10")
-    .apt_install("git", "ffmpeg", "libsm6", "libxext6", "wget")
-    .pip_install(
-        "torch==2.0.1",
-        "torchaudio==2.0.2",
-        "torchvision==0.15.2",
-        "numpy<2.0",
-        "whisperx==3.1.1",
-        "boto3",
-        "opencv-python-headless",
-        "google-genai",
-        "fastapi[standard]",
+    .apt_install(
+        "git", "ffmpeg", "wget", "pkg-config", "build-essential",
+        "libavformat-dev", "libavcodec-dev", "libavutil-dev",
+        "libswscale-dev", "libavdevice-dev", "libavfilter-dev",
+        "libswresample-dev", "libsm6", "libxext6",
+        "libsndfile1" 
     )
     .run_commands(
         [
+            "pip install --upgrade pip",
+            
+            # 1. FONDASI ANTI-CRASH
+            "pip install 'Cython<3.0' 'numpy<2.0' setuptools wheel",
+            
+            # 2. OPERASI MANUAL 'AV'
+            "pip install av==11.0.0 --no-build-isolation --no-deps",
+            
+            # 3. CORE APPS
+            "pip install faster-whisper==0.10.1 --no-deps",
+            "pip install whisperx==3.1.1 --no-deps",
+            
+            # 4. INSTALASI LENGKAP DEPENDENSI
+            # Gw apus huggingface_hub karena kita gausah login lagi!
+            "pip install 'numpy<2.0' \
+                         'ctranslate2==3.24.0' \
+                         'tokenizers' \
+                         'transformers' \
+                         'pandas' \
+                         'nltk' \
+                         'scipy' \
+                         'soundfile' \
+                         'python_speech_features' \
+                         'scikit-learn' \
+                         'tqdm' \
+                         'scenedetect' \
+                         'pyannote.audio' \
+                         'speechbrain' \
+                         'torch==2.0.1' \
+                         'torchaudio==2.0.2' \
+                         'torchvision==0.15.2' \
+                         'boto3' \
+                         'opencv-python-headless' \
+                         'google-genai' \
+                         'gdown' \
+                         'fastapi[standard]'"
+        ]
+    )
+    # 5. [FIX FINAL] - DOWNLOAD MANUAL DARI LINK TEMUAN LU
+    # Kita download 'whisperx-vad-segmentation.bin' dari repo Synthetai (Public).
+    # Disimpan ke /root/.cache/torch/ biar WhisperX langsung nemu.
+    .run_commands(
+        [
+            "mkdir -p /root/.cache/torch",
+            
+            # INI DIA LINK PENYELAMATNYA:
+            "wget -O /root/.cache/torch/whisperx-vad-segmentation.bin https://huggingface.co/Synthetai/whisperx-vad-segmentation/resolve/main/pytorch_model.bin",
+            
+            # Sisa setup file pendukung
             "mkdir -p /usr/share/fonts/truetype/custom",
             "wget -O /usr/share/fonts/truetype/custom/Anton-Regular.ttf https://github.com/google/fonts/raw/main/ofl/anton/Anton-Regular.ttf",
             "wget -O /usr/share/fonts/truetype/custom/Montserrat-Black.ttf https://raw.githubusercontent.com/google/fonts/main/ofl/montserratalternates/MontserratAlternates-Black.ttf",
             "fc-cache -f -v",
             "git clone https://github.com/Junhua-Liao/LR-ASD /asd",
             "sed -i 's/np.int)/int)/g' /asd/model/faceDetector/s3fd/box_utils.py",
+            "mkdir -p /asd/model/faceDetector/s3fd",
+            "cd /asd && gdown --id 1KafnHz7ccT-3IyddBsL5yi2xGtxAKypt -O model/faceDetector/s3fd/sfd_face.pth",
         ]
     )
 )
 
 app = modal.App("clipper", image=image)
 
-volume = modal.Volume.from_name(
-    "clipper-modal-cache", create_if_missing=True
-)
+volume = modal.Volume.from_name("clipper-modal-cache", create_if_missing=True)
 
-mount_path = "/root/.cache/torch"
+# Use a fresh path for the cache volume to avoid mounting over non-empty defaults.
+mount_path = "/root/clipper-cache/torch"
 
 
 class TokenBucketRateLimiter:
@@ -502,9 +549,24 @@ def process_clip(base_dir: str, original_video_path: str, s3_key: str, start_tim
     if not clip_segments_path.exists():
         print(f"[Clip {clip_index}] Skipping Columbia pipeline; segment missing at {clip_segments_path}")
         return
-    subprocess.run(columbia_cmd, cwd="/asd", shell=True, check=True)
+    columbia_result = subprocess.run(
+        columbia_cmd,
+        cwd="/asd",
+        shell=True,
+        capture_output=True,
+        text=True,
+    )
+    if columbia_result.returncode != 0:
+        print(
+            f"[Clip {clip_index}] Columbia pipeline failed (exit {columbia_result.returncode}). "
+            f"stdout: {columbia_result.stdout} stderr: {columbia_result.stderr}"
+        )
+        return
+
     columbia_end_time = time.time()
-    print(f"Columbia script completed in {columbia_end_time - columbia_start_time:.2f} seconds")
+    print(
+        f"Columbia script completed in {columbia_end_time - columbia_start_time:.2f} seconds"
+    )
 
     # Verify segment survived Columbia pipeline; restore from backup if needed.
     if not clip_segments_path.exists():
@@ -572,7 +634,8 @@ def process_clip(base_dir: str, original_video_path: str, s3_key: str, start_tim
     scaledown_window=20,
     image=image,
     secrets=[modal.Secret.from_name("clipper-secret")],
-    volumes={mount_path: volume},
+    # volumes={mount_path: volume},
+    # env={"TORCH_HOME": mount_path, "HF_HOME": mount_path},
 )
 class Clipper:
     @modal.enter()
@@ -581,6 +644,11 @@ class Clipper:
         import torchaudio
         import whisperx
         from google import genai
+
+        # Ensure torch is globally available for any imported modules that expect a global binding.
+        globals()["torch"] = torch
+        import builtins
+        builtins.torch = torch
 
         print("loading models...")
         print("torch:", torch.__version__)
@@ -742,8 +810,8 @@ Candidates (JSON): {json.dumps(limited_candidates)}
             return json.dumps(limited_candidates[:3])
     
     @modal.fastapi_endpoint(method="POST")
-    async def process_video(self, request: "Request"):
-        from fastapi import HTTPException, Request, status
+    async def process_video(self, request: Request):
+        from fastapi import HTTPException, status
         from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
         import boto3
 
