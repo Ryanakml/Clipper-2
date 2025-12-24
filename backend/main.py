@@ -171,8 +171,7 @@ def chunk_transcript_segments(transcript_segments: list, max_words_per_chunk: in
     """
     chunks = []
     words = []
-    start_time = None
-    end_time = None
+    overlap_count = min(max(1, int(max_words_per_chunk * 0.2)), 100)
 
     for segment in transcript_segments:
         word = segment.get("word", "").strip()
@@ -181,29 +180,68 @@ def chunk_transcript_segments(transcript_segments: list, max_words_per_chunk: in
         if not word or seg_start is None or seg_end is None:
             continue
 
-        if start_time is None:
-            start_time = seg_start
-        end_time = seg_end
-        words.append(word)
+        words.append((word, seg_start, seg_end))
 
         if len(words) >= max_words_per_chunk:
+            chunk_start = words[0][1]
+            chunk_end = words[-1][2]
             chunks.append({
-                "text": " ".join(words),
-                "start": float(start_time),
-                "end": float(end_time)
+                "text": " ".join(w[0] for w in words),
+                "start": float(chunk_start),
+                "end": float(chunk_end)
             })
-            words = []
-            start_time = None
-            end_time = None
+            words = words[-overlap_count:] if overlap_count > 0 else []
 
     if words:
+        chunk_start = words[0][1]
+        chunk_end = words[-1][2]
         chunks.append({
-            "text": " ".join(words),
-            "start": float(start_time) if start_time is not None else 0.0,
-            "end": float(end_time) if end_time is not None else 0.0,
+            "text": " ".join(w[0] for w in words),
+            "start": float(chunk_start) if chunk_start is not None else 0.0,
+            "end": float(chunk_end) if chunk_end is not None else 0.0,
         })
 
     return chunks
+
+
+def snap_to_word_boundaries(target_start: float, target_end: float, transcript_segments: list) -> tuple[float, float]:
+    """
+    Snap requested timestamps to the nearest word boundaries from WhisperX output.
+    """
+    try:
+        target_start = float(target_start)
+        target_end = float(target_end)
+    except (TypeError, ValueError):
+        return target_start, target_end
+
+    best_start_time = None
+    best_start_diff = float("inf")
+    best_end_time = None
+    best_end_diff = float("inf")
+
+    for segment in transcript_segments:
+        seg_start = segment.get("start")
+        seg_end = segment.get("end")
+
+        if seg_start is not None:
+            diff_start = abs(seg_start - target_start)
+            if diff_start < best_start_diff:
+                best_start_diff = diff_start
+                best_start_time = seg_start
+
+        if seg_end is not None:
+            diff_end = abs(seg_end - target_end)
+            if diff_end < best_end_diff:
+                best_end_diff = diff_end
+                best_end_time = seg_end
+
+    snapped_start = best_start_time if best_start_time is not None else target_start
+    snapped_end = best_end_time if best_end_time is not None else target_end
+
+    if snapped_end <= snapped_start:
+        return float(target_start), float(target_end)
+
+    return float(snapped_start), float(snapped_end)
 
 
 def s3_load_json(client, bucket: str, key: str):
@@ -251,6 +289,7 @@ def get_video_duration(video_path: pathlib.Path) -> Optional[float]:
 def create_vertical_video(tracks, scores, pyframes_path, pyavi_path, audio_path, output_path, framerate=25):
     import cv2
     import numpy as np
+    from collections import deque
 
     target_width = 1080
     target_height = 1920
@@ -290,6 +329,11 @@ def create_vertical_video(tracks, scores, pyframes_path, pyavi_path, audio_path,
     if not vout.isOpened():
         raise RuntimeError("Failed to initialize video writer for vertical output.")
 
+    # Maintain a short history of face positions to smooth camera movement.
+    history_window = 8  # ~6-10 frames; tweak for smoother tracking.
+    x_history = deque(maxlen=history_window)
+    y_history = deque(maxlen=history_window)
+
     for fidx, fname in enumerate(flist):
         img = cv2.imread(fname)
         if img is None:
@@ -303,12 +347,34 @@ def create_vertical_video(tracks, scores, pyframes_path, pyavi_path, audio_path,
         if max_score_face and max_score_face['score'] < 0:
             max_score_face = None
 
-        if max_score_face:
-            mode = "crop"
-        else:
-            mode = "resize"
+        # Decide whether to crop using smoothed coordinates or fall back to resize.
+        should_crop = bool(max_score_face) or bool(x_history)
 
-        if mode == "resize":
+        if should_crop:
+            scale = target_height / img.shape[0]
+            resized_image = cv2.resize(
+                img, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+            frame_width = resized_image.shape[1]
+
+            # Update history with scaled face coordinates when available.
+            if max_score_face:
+                x_history.append(max_score_face["x"] * scale)
+                if "y" in max_score_face:
+                    y_history.append(max_score_face["y"] * scale)
+
+            smoothed_x = int(sum(x_history) / len(x_history)) if x_history else frame_width // 2
+            # Y smoothing is kept for completeness, though current crop is horizontal.
+            smoothed_y = int(sum(y_history) / len(y_history)) if y_history else target_height // 2
+
+            center_x = smoothed_x
+            top_x = max(min(center_x - target_width // 2,
+                        frame_width - target_width), 0)
+
+            image_cropped = resized_image[0:target_height,
+                                          top_x:top_x + target_width]
+
+            vout.write(image_cropped.astype("uint8"))
+        else:
             scale = target_width / img.shape[1]
             resized_height = int(img.shape[0] * scale)
             resized_image = cv2.resize(
@@ -334,22 +400,6 @@ def create_vertical_video(tracks, scores, pyframes_path, pyavi_path, audio_path,
 
             vout.write(blurred_background.astype("uint8"))
 
-        elif mode == "crop":
-            scale = target_height / img.shape[0]
-            resized_image = cv2.resize(
-                img, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
-            frame_width = resized_image.shape[1]
-
-            center_x = int(
-                max_score_face["x"] * scale if max_score_face else frame_width // 2)
-            top_x = max(min(center_x - target_width // 2,
-                        frame_width - target_width), 0)
-
-            image_cropped = resized_image[0:target_height,
-                                          top_x:top_x + target_width]
-
-            vout.write(image_cropped.astype("uint8"))
-
     if vout:
         vout.release()
 
@@ -370,46 +420,7 @@ def create_subtitles_with_ffmpeg(transcript_segments: list, clip_start: float, c
                      and segment.get("start") < clip_end
                      ]
 
-    subtitles = []
-    current_words = []
-    current_start = None
-    current_end = None
-
-    for segment in clip_segments:
-        word = segment.get("word", "").strip()
-        seg_start = segment.get("start")
-        seg_end = segment.get("end")
-
-        if not word or seg_start is None or seg_end is None:
-            continue
-
-        start_rel = max(0.0, seg_start - clip_start)
-        end_rel = min(max(0.0, seg_end - clip_start), clip_end - clip_start)
-
-        if end_rel <= 0 or end_rel <= start_rel:
-            continue
-
-        if not current_words:
-            current_start = start_rel
-            current_end = end_rel
-            current_words = [word]
-        elif len(current_words) >= max_words:
-            subtitles.append(
-                (current_start, current_end, ' '.join(current_words)))
-            current_words = [word]
-            current_start = start_rel
-            current_end = end_rel
-        else:
-            current_words.append(word)
-            current_end = end_rel
-
-    if current_words:
-        subtitles.append(
-            (current_start, current_end, ' '.join(current_words)))
-
-    if not subtitles:
-        shutil.copy(clip_video_path, output_path)
-        return
+    clip_duration = max(0.0, clip_end - clip_start)
 
     def format_ass_timestamp(seconds: float) -> str:
         total_centiseconds = max(0, int(seconds * 100))
@@ -429,16 +440,69 @@ def create_subtitles_with_ffmpeg(transcript_segments: list, clip_start: float, c
         "",
         "[V4+ Styles]",
         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-        "Style: HormoziStyle,Anton,80,&H0000FFFF,&H000000FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,4,0,2,0,0,550,0",
+        # Primary: White, Secondary (karaoke highlight): Yellow, Outline: Black
+        "Style: ClipperStyle,Montserrat-Black,72,&H00FFFFFF,&H0000FFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,4,0,2,0,0,150,0",
         "",
         "[Events]",
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
     ]
 
-    dialogue_lines = [
-        f"Dialogue: 0,{format_ass_timestamp(start)},{format_ass_timestamp(end)},HormoziStyle,,0,0,0,,{text.upper()}"
-        for start, end, text in subtitles
-    ]
+    dialogue_lines = []
+
+    def add_event(start_time: float, end_time: float, words_with_colors: list[str]):
+        if end_time <= start_time:
+            return
+        text = " ".join(words_with_colors)
+        dialogue_lines.append(
+            f"Dialogue: 0,{format_ass_timestamp(start_time)},{format_ass_timestamp(end_time)},ClipperStyle,,0,0,150,,{text}"
+        )
+
+    batch = []
+    for segment in clip_segments:
+        word = segment.get("word", "").strip()
+        seg_start = segment.get("start")
+        seg_end = segment.get("end")
+
+        if not word or seg_start is None or seg_end is None:
+            continue
+
+        start_rel = max(0.0, seg_start - clip_start)
+        end_rel = min(max(0.0, seg_end - clip_start), clip_end - clip_start)
+
+        if end_rel <= 0 or end_rel <= start_rel:
+            continue
+
+        batch.append((start_rel, end_rel, word))
+
+        if len(batch) >= 3:
+            batch_start = batch[0][0]
+            batch_end = batch[-1][1]
+            for i, (w_start, w_end, w_text) in enumerate(batch):
+                # Extend each word event to the start of the next word for smoother transitions.
+                next_start = batch[i + 1][0] if i + 1 < len(batch) else batch_end
+                event_end = max(w_end, next_start)
+                colored_words = []
+                for j, (_, _, inner_word) in enumerate(batch):
+                    color = "&H00FFFF" if i == j else "&H00FFFFFF"
+                    colored_words.append(f"{{\\c{color}}}{inner_word}")
+                add_event(w_start, event_end, colored_words)
+            batch = []
+
+    if batch:
+        batch_start = batch[0][0]
+        batch_end = batch[-1][1]
+        for i, (w_start, w_end, w_text) in enumerate(batch):
+            next_start = batch[i + 1][0] if i + 1 < len(batch) else batch_end
+            event_end = max(w_end, next_start)
+            colored_words = []
+            for j, (_, _, inner_word) in enumerate(batch):
+                color = "&H00FFFF" if i == j else "&H00FFFFFF"
+                colored_words.append(f"{{\\c{color}}}{inner_word}")
+            add_event(w_start, event_end, colored_words)
+
+    if not dialogue_lines:
+        shutil.copy(clip_video_path, output_path)
+        return
 
     with open(subtitle_path, "w", encoding="utf-8") as sub_file:
         sub_file.write("\n".join(style_header + dialogue_lines))
@@ -449,7 +513,17 @@ def create_subtitles_with_ffmpeg(transcript_segments: list, clip_start: float, c
         "-i",
         str(clip_video_path),
         "-vf",
-        f"ass={subtitle_path}",
+        (
+            f"ass={subtitle_path},"
+            "drawtext=fontfile=/usr/share/fonts/truetype/custom/Montserrat-Black.ttf"
+            ":text='clipperai.tech'"
+            ":fontcolor=white@0.5"
+            ":fontsize=32"
+            ":x=30"
+            ":y=30"
+        ),
+        "-af",
+        "loudnorm=I=-16:TP=-1.5:LRA=11",
         "-c:v",
         "h264",
         "-preset",
@@ -628,12 +702,12 @@ def process_clip(base_dir: str, original_video_path: str, s3_key: str, start_tim
     print(f"[Clip {clip_index}] Upload complete: s3://clipper-demo-bucket/{output_s3_key}")
 
 @app.cls(
-    gpu="L40S",
+    gpu="L4",
     timeout=900,
     retries=0,
     scaledown_window=20,
     image=image,
-    secrets=[modal.Secret.from_name("clipper-secret")],
+    secrets=[modal.Secret.from_name("custom-secret")],
     # volumes={mount_path: volume},
     # env={"TORCH_HOME": mount_path, "HF_HOME": mount_path},
 )
@@ -718,96 +792,77 @@ class Clipper:
 
     def identify_moments(self, transcript: list, s3_key: Optional[str] = None):
         """
-        Identify top moments using a token-capped map/reduce flow to avoid TPM spikes.
+        Identify top moments with a single long-context Gemini call to respect RPM/RPD limits.
         """
-        model_name = "models/gemini-2.5-flash"
-        map_chunks = chunk_transcript_segments(transcript, max_words_per_chunk=3000)
-
-        if not map_chunks:
+        if not transcript:
             return "[]"
 
-        map_candidates = []
-        map_prompt_template = """
-You are a professional video editor for viral TikTok/Reels/Shorts.
-Given a transcript chunk from the FULL video between {start:.2f}s and {end:.2f}s,
-propose up to 2 candidate clips that would perform well.
+        model_name = "models/gemini-2.5-flash"
+        max_input_tokens = 200_000
 
-Rules (be concise):
-- Clip length 30-60 seconds.
-- Start with a strong hook.
-- Must be self-contained (beginning, middle, end).
-- Use ABSOLUTE timestamps relative to the original video timeline (not the chunk).
-- Return ONLY JSON array. Fields: start (float), end (float), summary (string), viral_score (1-100).
-- If unsure, return [].
-Example: [{{"start": 120.5, "end": 155.0, "summary": "Why AI will replace coders", "viral_score": 95}}]
+        def build_transcript_text(segments: list) -> str:
+            lines = []
+            for seg in segments:
+                word = seg.get("word", "").strip()
+                seg_start = seg.get("start")
+                seg_end = seg.get("end")
+                if not word or seg_start is None or seg_end is None:
+                    continue
+                lines.append(f"{float(seg_start):.2f}-{float(seg_end):.2f} {word}")
+            return "\n".join(lines)
 
-Transcript:
+        working_segments = transcript
+        full_transcript_text = build_transcript_text(working_segments)
+
+        transcript_start = float(working_segments[0].get("start", 0.0)) if working_segments else 0.0
+        transcript_end = float(working_segments[-1].get("end", 0.0)) if working_segments else 0.0
+
+        prompt_header = f"""
+SYSTEM: You are a Viral Strategist for TikTok/Reels/Shorts with full-context access to the entire transcript.
+Task: Pick up to 3 clips that maximize viewer retention via conflict, emotion, or counter-intuitive hooks. Strictly ignore intros, outros, housekeeping, sponsor reads, or fluff. Use ABSOLUTE timestamps from the transcript (seconds). Clip length target: 30-60 seconds. Prioritize the strongest immediate hook.
+Output: STRICT JSON array with objects {{start: float, end: float, summary: string, viral_score: 1-100}}. Keep the same structure exactly. Use {transcript_start:.2f}s-{transcript_end:.2f}s as the full timeline context. If no strong clips exist, return [].
+
+Transcript (word-level with timestamps):
 """
 
-        for chunk in map_chunks:
-            chunk_prompt = map_prompt_template.format(start=chunk["start"], end=chunk["end"])
-            payload_text = chunk_prompt + chunk["text"]
+        payload_text = prompt_header + full_transcript_text
+        tokens_in = estimate_tokens_from_text(payload_text)
+
+        if tokens_in > max_input_tokens:
+            ratio = max_input_tokens / tokens_in
+            max_seg = max(100, int(len(working_segments) * ratio))
+            working_segments = working_segments[:max_seg]
+            full_transcript_text = build_transcript_text(working_segments)
+            payload_text = prompt_header + full_transcript_text
             tokens_in = estimate_tokens_from_text(payload_text)
-            self.rate_limiter.acquire(tokens_in)
-            try:
-                response = self.gemini_client.models.generate_content(
-                    model=model_name,
-                    contents=payload_text,
-                    config={"max_output_tokens": 512},
-                )
-                response_text = getattr(response, "text", "") or ""
-                parsed = parse_json_block(response_text)
-                print(f"Map raw Gemini response ({chunk['start']}-{chunk['end']}): {response_text[:200]}")
-                if parsed:
-                    map_candidates.extend(parsed)
-                else:
-                    print(f"Map step returned no clips for chunk {chunk['start']}-{chunk['end']}")
-            except Exception as exc:
-                print(f"identify_moments map step failed for chunk {chunk['start']}-{chunk['end']}: {exc}")
-                continue
+            print(f"Transcript truncated for token safety: {len(working_segments)} segments, est tokens {tokens_in}")
 
-        if not map_candidates:
-            # Fallback: build a single clip using transcript timing to avoid empty results.
-            try:
-                transcript_start = float(transcript[0].get("start", 0.0)) if transcript else 0.0
-                transcript_end = float(transcript[-1].get("end", 0.0)) if transcript else 60.0
-                clip_start = max(0.0, transcript_start)
-                clip_end = min(transcript_end, clip_start + 55.0)
-                fallback = [{
-                    "start": clip_start,
-                    "end": clip_end if clip_end > clip_start else clip_start + 45.0,
-                    "summary": "Auto clip (fallback)",
-                    "viral_score": 50,
-                }]
-                print("Map step empty; using fallback clip from transcript bounds")
-                return json.dumps(fallback)
-            except Exception as exc:
-                print(f"Fallback clip creation failed: {exc}")
-                return "[]"
-
-        # Reduce step to pick the best clips from all candidates.
-        # Limit the number of candidates sent to reduce token usage.
-        limited_candidates = map_candidates[:20]
-        reduce_prompt = f"""
-You are ranking candidate clips for a short-form edit.
-Pick the top 3 clips by viral_score and tighten start/end to the best hook within 30-60s.
-Return STRICT JSON array with fields: start, end, summary, viral_score (1-100).
-Candidates (JSON): {json.dumps(limited_candidates)}
-"""
-        tokens_in = estimate_tokens_from_text(reduce_prompt)
         self.rate_limiter.acquire(tokens_in)
         try:
             response = self.gemini_client.models.generate_content(
                 model=model_name,
-                contents=reduce_prompt,
-                config={"max_output_tokens": 512},
+                contents=payload_text,
+                config={"max_output_tokens": 8192},
             )
             response_text = getattr(response, "text", "") or ""
-            print(f"Identified moments response: {response_text}")
-            return response_text or json.dumps(limited_candidates[:3])
+            print(f"Identify moments (one-shot) raw response: {response_text[:400]}")
+            return response_text
         except Exception as exc:
-            print(f"identify_moments reduce step failed: {exc}")
-            return json.dumps(limited_candidates[:3])
+            print(f"identify_moments single-call failed: {exc}")
+            # Fallback: pick a mid-range clip if API fails.
+            try:
+                clip_start = max(0.0, transcript_start)
+                clip_end = min(transcript_end, clip_start + 55.0) if transcript_end > clip_start else clip_start + 45.0
+                fallback = [{
+                    "start": clip_start,
+                    "end": clip_end,
+                    "summary": "Auto clip (fallback)",
+                    "viral_score": 50,
+                }]
+                return json.dumps(fallback)
+            except Exception as inner_exc:
+                print(f"Fallback clip creation failed: {inner_exc}")
+                return "[]"
     
     @modal.fastapi_endpoint(method="POST")
     async def process_video(self, request: Request):
@@ -893,8 +948,14 @@ Candidates (JSON): {json.dumps(limited_candidates)}
         print(f"Found {len(clip_moments)} moments, processing top {max_clips}...")
 
         for index, moment in enumerate(clean_clip_moments[:max_clips]):
-            print("Processing clip "+ str(index) + " (Score: " + str(moment.get('viral_score', 'N/A')) + ")")
-            process_clip(base_dir, video_path, s3_key, moment["start"], moment["end"], index, transcript_segments, video_duration)
+            snapped_start, snapped_end = snap_to_word_boundaries(
+                moment["start"], moment["end"], transcript_segments
+            )
+            print(
+                f"Processing clip {index} (Score: {moment.get('viral_score', 'N/A')}) "
+                f"timestamps {moment['start']:.2f}-{moment['end']:.2f} -> {snapped_start:.2f}-{snapped_end:.2f}"
+            )
+            process_clip(base_dir, video_path, s3_key, snapped_start, snapped_end, index, transcript_segments, video_duration)
 
         if base_dir.exists():
             print(f"Cleaning up temp dir after {base_dir}")
@@ -914,11 +975,11 @@ def main():
     url = clipper.process_video.get_web_url()
 
     payload = {
-        "s3_key": "test1/input5min.mp4"
+        "s3_key": "test1/input1.mp4"
     }
 
     headers = {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json", 
         "Authorization": "Bearer 123123"
     }
 
