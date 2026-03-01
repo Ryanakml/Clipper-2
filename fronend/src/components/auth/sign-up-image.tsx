@@ -76,7 +76,7 @@ export function SignupImage() {
                       Smart Highlights
                     </p>
                     <p className="text-[10px] leading-tight text-slate-400 dark:text-zinc-500">
-                      Momen terbaik dipilih AI
+                      Best moments selected by AI
                     </p>
                   </div>
                 </div>
@@ -91,7 +91,7 @@ export function SignupImage() {
                       Auto Captions
                     </p>
                     <p className="text-[10px] leading-tight text-slate-400 dark:text-zinc-500">
-                      Subtitle otomatis akurat
+                      Accurate auto-generated subtitles
                     </p>
                   </div>
                 </div>
@@ -106,7 +106,7 @@ export function SignupImage() {
                       Fast Render
                     </p>
                     <p className="text-[10px] leading-tight text-slate-400 dark:text-zinc-500">
-                      Selesai dalam detik
+                      Finished in seconds
                     </p>
                   </div>
                 </div>
@@ -125,11 +125,11 @@ export function SignupImage() {
         {/* Bottom Copywriting */}
         <div className="mt-10 space-y-1 text-center">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-            Satu klik, jadi konten.
+            One click, instant content.
           </h3>
           <p className="mx-auto max-w-xs text-sm text-slate-500 dark:text-zinc-400">
-            Upload video panjang, biarkan AI memotong, memberi caption, dan
-            memilih momen viralnya.
+            Upload long videos, let AI cut, add captions, and select the best
+            viral moments.
           </p>
         </div>
       </div>

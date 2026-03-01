@@ -23,10 +23,15 @@ export function UploadQueueTable({
   return (
     <div className="pt-2">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="mb-2 text-base font-medium">Status antrean</h3>
-        <Button variant="outline" size="sm" onClick={onRefresh} disabled={refreshing}>
+        <h3 className="mb-2 text-base font-medium">Queue status</h3>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRefresh}
+          disabled={refreshing}
+        >
           {refreshing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Muat ulang
+          Refresh
         </Button>
       </div>
       <div className="max-h-100 overflow-auto rounded-md border">
@@ -34,9 +39,9 @@ export function UploadQueueTable({
           <TableHeader>
             <TableRow>
               <TableHead>File</TableHead>
-              <TableHead>Diunggah</TableHead>
+              <TableHead>Uploaded</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Clip dibuat</TableHead>
+              <TableHead>Clips Created</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -52,7 +57,7 @@ export function UploadQueueTable({
                   {item.status === "uploading" ? (
                     <div className="min-w-35 space-y-2">
                       <div className="text-muted-foreground flex items-center justify-between text-xs">
-                        <span>Mengunggah...</span>
+                        <span>Uploading...</span>
                         <span className="font-mono">
                           {item.uploadProgress ?? 0}%
                         </span>
@@ -71,7 +76,7 @@ export function UploadQueueTable({
                           variant="outline"
                           className="border-yellow-200 bg-yellow-50 text-yellow-700 hover:bg-yellow-50"
                         >
-                          Menunggu
+                          Waiting
                         </Badge>
                       )}
                       {item.status === "uploaded" && (
@@ -79,7 +84,7 @@ export function UploadQueueTable({
                           variant="outline"
                           className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-50"
                         >
-                          Diunggah
+                          Uploaded
                         </Badge>
                       )}
                       {item.status === "processing" && (
@@ -87,7 +92,7 @@ export function UploadQueueTable({
                           variant="outline"
                           className="border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-50"
                         >
-                          Memproses
+                          Processing
                         </Badge>
                       )}
                       {item.status === "processed" && (
@@ -95,7 +100,7 @@ export function UploadQueueTable({
                           variant="outline"
                           className="border-green-200 bg-green-50 text-green-700 hover:bg-green-50"
                         >
-                          Selesai
+                          Complete
                         </Badge>
                       )}
                       {item.status === "cancelled" && (
@@ -103,11 +108,11 @@ export function UploadQueueTable({
                           variant="outline"
                           className="border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-50"
                         >
-                          Dibatalkan
+                          Cancelled
                         </Badge>
                       )}
                       {item.status === "failed" && (
-                        <Badge variant="destructive">Gagal</Badge>
+                        <Badge variant="destructive">Failed</Badge>
                       )}
                     </div>
                   )}

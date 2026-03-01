@@ -53,44 +53,32 @@ const plans: PricingPlan[] = [
   {
     title: "Small Pack",
     price: "Rp15.000",
-    description: "Paket hemat untuk coba-coba atau user baru",
-    features: [
-      "50 credits",
-      "Tidak ada masa kadaluarsa",
-      "Pembayaran aman via Midtrans",
-    ],
-    buttonText: "Bayar dengan Midtrans",
+    description: "Budget-friendly package for trying or new users",
+    features: ["50 credits", "No expiration", "Secure payment via Midtrans"],
+    buttonText: "Pay with Midtrans",
     buttonVariant: "outline",
     priceId: "small",
   },
   {
     title: "Medium Pack",
     price: "Rp39.000",
-    description: "Nilai terbaik untuk podcaster reguler",
-    features: [
-      "150 credits",
-      "Tidak ada masa kadaluarsa",
-      "Pembayaran aman via Midtrans",
-    ],
-    buttonText: "Bayar dengan Midtrans",
+    description: "Best value for regular podcasters",
+    features: ["150 credits", "No expiration", "Secure payment via Midtrans"],
+    buttonText: "Pay with Midtrans",
     buttonVariant: "default",
     isPopular: true,
-    savePercentage: "Hemat lebih banyak",
+    savePercentage: "Save more",
     priceId: "medium",
   },
   {
     title: "Large Pack",
     price: "Rp119.000",
-    description: "Untuk studio atau agensi yang butuh banyak quota",
-    features: [
-      "500 credits",
-      "Tidak ada masa kadaluarsa",
-      "Pembayaran aman via Midtrans",
-    ],
-    buttonText: "Bayar dengan Midtrans",
+    description: "For studios or agencies needing high quota",
+    features: ["500 credits", "No expiration", "Secure payment via Midtrans"],
+    buttonText: "Pay with Midtrans",
     buttonVariant: "outline",
     isPopular: false,
-    savePercentage: "Bonus terbanyak",
+    savePercentage: "Most bonus",
     priceId: "large",
   },
 ];
@@ -132,23 +120,23 @@ export function BillingContent({
             Credits & top up
           </h1>
           <p className="text-muted-foreground text-sm">
-            Beli credits lewat Midtrans Snap. Pembayaran satu kali, bukan
-            langganan otomatis.
+            Buy credits via Midtrans Snap. One-time payment, not automatic
+            subscription.
           </p>
         </div>
         <Button variant="ghost" size="sm" asChild>
           <Link href="/dashboard">
             <ArrowLeftIcon className="mr-2 size-4" />
-            Kembali ke dashboard
+            Back to dashboard
           </Link>
         </Button>
       </div>
 
       <Card>
         <CardHeader className="space-y-1">
-          <CardTitle>Paket credits</CardTitle>
+          <CardTitle>Credit packages</CardTitle>
           <CardDescription>
-            Pilih paket sesuai kebutuhan. Credits tidak pernah kadaluarsa.
+            Choose the package that suits your needs. Credits never expire.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -162,18 +150,18 @@ export function BillingContent({
 
       <Card>
         <CardHeader>
-          <CardTitle>Cara kerja credits</CardTitle>
+          <CardTitle>How credits work</CardTitle>
           <CardDescription>
-            Ringkasan singkat supaya kamu tahu apa yang dibeli.
+            A brief summary so you know what you're buying.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <ul className="text-muted-foreground list-disc space-y-2 pl-5 text-sm">
-            <li>1 credit = 1 menit pemrosesan podcast</li>
-            <li>Kurang lebih 1 clip per 5 menit audio/video</li>
-            <li>Credits tidak pernah kadaluarsa</li>
-            <li>Durasi lebih panjang akan mengurangi credits lebih banyak</li>
-            <li>Pembelian ini one-time, bukan langganan</li>
+            <li>1 credit = 1 minute of podcast processing</li>
+            <li>Approximately 1 clip per 5 minutes of audio/video</li>
+            <li>Credits never expire</li>
+            <li>Longer duration uses more credits</li>
+            <li>This purchase is one-time, not a subscription</li>
           </ul>
         </CardContent>
       </Card>
@@ -181,22 +169,21 @@ export function BillingContent({
       <Card>
         <CardHeader className="flex flex-row items-start justify-between">
           <div className="space-y-1">
-            <CardTitle>Riwayat pembayaran</CardTitle>
-            <CardDescription>10 transaksi terakhir kamu.</CardDescription>
+            <CardTitle>Payment history</CardTitle>
+            <CardDescription>Your 10 most recent transactions.</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
           {normalizedPayments.length === 0 ? (
             <p className="text-muted-foreground text-sm">
-              Belum ada transaksi. Lakukan pembayaran pertama untuk melihat
-              riwayat di sini.
+              No transactions yet. Make your first payment to see history here.
             </p>
           ) : (
             <div className="overflow-hidden rounded-lg border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Pembelian</TableHead>
+                    <TableHead>Purchase</TableHead>
                     <TableHead>Order ID</TableHead>
                     <TableHead>Tanggal</TableHead>
                     <TableHead className="text-right">Status</TableHead>

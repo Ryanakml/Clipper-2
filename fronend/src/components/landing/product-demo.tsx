@@ -34,9 +34,9 @@ export default function ProductDemo() {
       clearTimeout(stepTimer);
       clearInterval(progressTimer);
     };
-  }, []);
+  }, [activeStep]);
 
-  // Handle klik manual pada tab
+  // Handle manual click on tabs
   const handleStepClick = (index: number) => {
     setActiveStep(index);
     setProgress(0);
@@ -59,8 +59,8 @@ export default function ProductDemo() {
           <div className="flex gap-1 overflow-x-auto rounded-lg bg-slate-200/50 p-1 md:gap-2 dark:bg-zinc-800/50">
             {[
               { id: 0, label: "1. Upload", icon: UploadCloud },
-              { id: 1, label: "2. Proses AI", icon: Wand2 },
-              { id: 2, label: "3. Hasil Clip", icon: Play },
+              { id: 1, label: "2. AI Processing", icon: Wand2 },
+              { id: 2, label: "3. Clip Results", icon: Play },
             ].map((step, index) => {
               const Icon = step.icon;
               const isActive = activeStep === index;
@@ -74,7 +74,7 @@ export default function ProductDemo() {
                       : "text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300"
                   }`}
                 >
-                  {/* Background Progress Bar (Hanya di step aktif) */}
+                  {/* Background Progress Bar (Only on active step) */}
                   {isActive && (
                     <div
                       className="absolute bottom-0 left-0 h-0.5 bg-purple-500 transition-all duration-100 ease-linear"
@@ -204,13 +204,13 @@ function StepProcessing({ progress }: { progress: number }) {
       </div>
 
       <h3 className="mb-2 text-base font-bold text-slate-900 md:text-lg dark:text-white">
-        AI Sedang Bekerja...
+        AI Processing...
       </h3>
 
       <p className="mb-6 h-5 text-xs text-slate-500 md:text-sm dark:text-zinc-400">
-        {progress < 30 && "Menganalisis Konteks Audio..."}
-        {progress >= 30 && progress < 60 && "Memotong Bagian Viral..."}
-        {progress >= 60 && progress < 90 && "Menambahkan Subtitle ID..."}
+        {progress < 30 && "Analyzing Audio Context..."}
+        {progress >= 30 && progress < 60 && "Cutting Viral Sections..."}
+        {progress >= 60 && progress < 90 && "Adding Subtitles..."}
         {progress >= 90 && "Finalizing Clips..."}
       </p>
 
@@ -231,10 +231,14 @@ function StepProcessing({ progress }: { progress: number }) {
 // --- STEP 3: RESULT ANIMATION (3 POP-UP CLIPS) ---
 function StepResult() {
   const clips = [
-    { title: "Momen Lucu", score: 98, color: "bg-green-100 text-green-700" },
-    { title: "Insight Bisnis", score: 92, color: "bg-blue-100 text-blue-700" },
+    { title: "Funny Moment", score: 98, color: "bg-green-100 text-green-700" },
     {
-      title: "Quote Motivasi",
+      title: "Business Insight",
+      score: 92,
+      color: "bg-blue-100 text-blue-700",
+    },
+    {
+      title: "Motivational Quote",
       score: 89,
       color: "bg-purple-100 text-purple-700",
     },

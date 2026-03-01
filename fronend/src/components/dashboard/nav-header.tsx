@@ -44,7 +44,7 @@ const NavHeader = ({ credits, email }: { credits: number; email: string }) => {
               variant="secondary"
               className="h-8 px-3 py-1.5 text-xs font-medium"
             >
-              {credits} kredit
+              {credits} credits
             </Badge>
 
             {/* <Button
@@ -53,7 +53,7 @@ const NavHeader = ({ credits, email }: { credits: number; email: string }) => {
               asChild
               className="h-8 text-xs font-medium"
             >
-              <Link href="/dashboard/billing">Beli kredit</Link>
+              <Link href="/dashboard/billing">Buy Credits</Link>
             </Button> */}
           </div>
 

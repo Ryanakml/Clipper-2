@@ -17,11 +17,11 @@ function ClipCard({ clip }: { clip: Clip }) {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setIsInView(true);
-            observer.disconnect(); // Stop observing setelah terlihat
+            observer.disconnect(); // Stop observing after visible
           }
         });
       },
-      { rootMargin: "200px" }, // Mulai load 200px sebelum terlihat
+      { rootMargin: "200px" }, // Start loading 200px before becoming visible
     );
 
     if (cardRef.current) {
@@ -94,7 +94,7 @@ function ClipCard({ clip }: { clip: Clip }) {
             </div>
           </div>
         ) : error ? (
-          // Error state dengan retry button
+          // Error state with retry button
           <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-4">
             <div className="bg-destructive/10 rounded-full p-4">
               <AlertCircle className="text-destructive h-8 w-8" />

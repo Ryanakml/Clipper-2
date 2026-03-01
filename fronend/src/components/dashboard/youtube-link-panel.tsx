@@ -45,11 +45,11 @@ export function YoutubeLinkPanel() {
             {processingLink && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Proses link
+            Process Link
           </Button>
         </div>
         <p className="text-muted-foreground mt-2 text-xs">
-          Mendukung video atau playlist publik/unlisted. Durasi maksimal 2 jam
+          Supports public/unlisted videos or playlists. Maximum duration 2 hours
           per video.
         </p>
       </div>

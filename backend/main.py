@@ -30,18 +30,18 @@ image = (
         [
             "pip install --upgrade pip",
             
-            # 1. FONDASI ANTI-CRASH
+            # 1. CRASH PREVENTION FOUNDATION
             "pip install 'Cython<3.0' 'numpy<2.0' setuptools wheel",
             
-            # 2. OPERASI MANUAL 'AV'
+            # 2. MANUAL 'AV' OPERATION
             "pip install av==11.0.0 --no-build-isolation --no-deps",
             
             # 3. CORE APPS
             "pip install faster-whisper==0.10.1 --no-deps",
             "pip install whisperx==3.1.1 --no-deps",
             
-            # 4. INSTALASI LENGKAP DEPENDENSI
-            # Gw apus huggingface_hub karena kita gausah login lagi!
+            # 4. COMPLETE DEPENDENCIES INSTALLATION
+            # Removed huggingface_hub since we don't need to login again!
             "pip install 'numpy<2.0' \
                          'ctranslate2==3.24.0' \
                          'tokenizers' \
@@ -66,17 +66,17 @@ image = (
                          'fastapi[standard]'"
         ]
     )
-    # 5. [FIX FINAL] - DOWNLOAD MANUAL DARI LINK TEMUAN LU
-    # Kita download 'whisperx-vad-segmentation.bin' dari repo Synthetai (Public).
-    # Disimpan ke /root/.cache/torch/ biar WhisperX langsung nemu.
+    # 5. [FINAL FIX] - MANUAL DOWNLOAD FROM DISCOVERED LINK
+    # We download 'whisperx-vad-segmentation.bin' from Synthetai repo (Public).
+    # Saved to /root/.cache/torch/ so WhisperX finds it immediately.
     .run_commands(
         [
             "mkdir -p /root/.cache/torch",
             
-            # INI DIA LINK PENYELAMATNYA:
+            # THIS IS THE SAVING LINK:
             "wget -O /root/.cache/torch/whisperx-vad-segmentation.bin https://huggingface.co/Synthetai/whisperx-vad-segmentation/resolve/main/pytorch_model.bin",
             
-            # Sisa setup file pendukung
+            # Remaining support files setup
             "mkdir -p /usr/share/fonts/truetype/custom",
             "wget -O /usr/share/fonts/truetype/custom/Anton-Regular.ttf https://github.com/google/fonts/raw/main/ofl/anton/Anton-Regular.ttf",
             "wget -O /usr/share/fonts/truetype/custom/Montserrat-Black.ttf https://raw.githubusercontent.com/google/fonts/main/ofl/montserratalternates/MontserratAlternates-Black.ttf",
@@ -611,7 +611,7 @@ def process_clip(base_dir: str, original_video_path: str, s3_key: str, start_tim
 
     shutil.copy(clip_segments_path, base_dir / f"{clip_name}.mp4")
 
-    # PATH TETAP /asd (karena sudah di-clone ke /asd)
+    # PATH REMAINS /asd (because already cloned to /asd)
     columbia_cmd = (
         f"python Columbia_test.py --videoName {clip_name} "
         f"--videoFolder {str(base_dir)} "
@@ -674,7 +674,7 @@ def process_clip(base_dir: str, original_video_path: str, s3_key: str, start_tim
         return
     extract_frames_cmd = (
     f"ffmpeg -i {clip_segments_path} "
-    f"-vf fps=25 "  # Pastikan fps sama dengan framerate script (25)
+    f"-vf fps=25 "  # Ensure fps matches framerate in script (25)
     f"-qscale:v 2 " # Kualitas gambar tinggi
     f"{pyframes_path}/%06d.jpg"
     )

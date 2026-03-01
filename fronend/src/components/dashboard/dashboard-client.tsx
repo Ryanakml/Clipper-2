@@ -100,8 +100,8 @@ const DashboardClient = ({
     maxFiles: 1,
     disabled: uploading,
     onDropRejected: () => {
-      toast.error("File tidak valid", {
-        description: "Pastikan format MP4 dan ukuran maksimal 500MB.",
+      toast.error("Invalid file", {
+        description: "Make sure the format is MP4 and size is maximum 500MB.",
       });
     },
   });
@@ -111,7 +111,7 @@ const DashboardClient = ({
     setFiles([]);
   };
 
-  // Fungsi untuk membatalkan upload SAAT proses berjalan
+  // Function to cancel upload DURING the process
   const cancelUpload = () => {
     if (uploadController.current) {
       uploadController.current.abort(); // Matikan koneksi internet upload
@@ -132,8 +132,8 @@ const DashboardClient = ({
     }
 
     setUploading(false);
-    toast.info("Upload dibatalkan", {
-      description: "Proses unggah video telah dihentikan.",
+    toast.info("Upload cancelled", {
+      description: "Video upload process has been stopped.",
     });
   };
 
@@ -221,9 +221,9 @@ const DashboardClient = ({
       setFiles([]); // Bersihkan file selection setelah sukses
       currentUploadId.current = null;
 
-      toast.success("Video berhasil diunggah", {
+      toast.success("Video uploaded successfully", {
         description:
-          "Videomu dijadwalkan untuk diproses. Cek statusnya di bawah.",
+          "Your video is scheduled for processing. Check its status below.",
         duration: 5000,
       });
     } catch (error: unknown) {
@@ -247,8 +247,9 @@ const DashboardClient = ({
         ),
       );
 
-      toast.error("Gagal mengunggah", {
-        description: "Ada masalah koneksi atau server. Silakan coba lagi.",
+      toast.error("Upload failed", {
+        description:
+          "There was a connection or server issue. Please try again.",
       });
     } finally {
       setUploading(false);
@@ -260,7 +261,7 @@ const DashboardClient = ({
     url: string,
     file: File,
     onProgress: (progress: number) => void,
-    signal: AbortSignal, // Terima signal
+    signal: AbortSignal, // Receive signal
   ) => {
     return new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -301,28 +302,30 @@ const DashboardClient = ({
     <div className="mx-auto flex max-w-5xl flex-col space-y-6 px-4 py-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Buat Clip</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Create Clips
+          </h1>
           <p className="text-muted-foreground">
-            Unggah podcast kamu dan dapatkan clip AI secara instan
+            Upload your podcast and get AI-generated clips instantly
           </p>
         </div>
         <Link href="/dashboard/billing">
-          <Button>Beli Kredit</Button>
+          <Button>Buy Credits</Button>
         </Link>
       </div>
 
       <Tabs defaultValue="upload">
         <TabsList>
           <TabsTrigger value="upload">Upload</TabsTrigger>
-          <TabsTrigger value="my-clips">Clip Saya</TabsTrigger>
+          <TabsTrigger value="my-clips">My Clips</TabsTrigger>
         </TabsList>
 
         <TabsContent value="upload" className="space-y-4">
-          <Card className="border-border/60 bg-gradient-to-b from-background via-background to-background">
+          <Card className="border-border/60 from-background via-background to-background bg-gradient-to-b">
             <CardHeader>
-              <CardTitle>Unggah Podcast</CardTitle>
+              <CardTitle>Upload Podcast</CardTitle>
               <CardDescription>
-                Unggah file audio/video atau pakai link YouTube untuk menghasilkan clip.
+                Upload audio/video file or use a YouTube link to generate clips.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -365,10 +368,10 @@ const DashboardClient = ({
         <TabsContent value="my-clips" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Clip Saya</CardTitle>
+              <CardTitle>My Clips</CardTitle>
               <CardDescription>
-                Lihat dan kelola clip yang sudah dihasilkan di sini. Proses bisa
-                memakan beberapa menit.
+                View and manage the clips that have been generated here.
+                Processing may take a few minutes.
               </CardDescription>
             </CardHeader>
             <CardContent>
