@@ -152,7 +152,7 @@ export function BillingContent({
         <CardHeader>
           <CardTitle>How credits work</CardTitle>
           <CardDescription>
-            A brief summary so you know what you're buying.
+            A brief summary so you know what you&apos;re buying.
           </CardDescription>
         </CardHeader>
         <CardContent>
