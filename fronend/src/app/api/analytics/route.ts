@@ -20,7 +20,14 @@ export async function POST(request: Request) {
     );
   }
 
-  const rawPayload = await request.json().catch(() => null);
+  let rawPayload: unknown = null;
+
+  try {
+    rawPayload = (await request.json()) as unknown;
+  } catch {
+    rawPayload = null;
+  }
+
   const parsedPayload = analyticsEventSchema.safeParse(rawPayload);
 
   if (!parsedPayload.success) {

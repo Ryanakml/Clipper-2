@@ -156,20 +156,20 @@ export default function AnalyticsTracker() {
       const href =
         trackedElement instanceof HTMLAnchorElement ? trackedElement.href : undefined;
       const analyticsLabel =
-        trackedElement.dataset.analyticsLabel ||
-        trackedElement.dataset.analytics ||
-        trackedElement.getAttribute("aria-label") ||
-        trackedElement.textContent?.trim() ||
+        trackedElement.dataset.analyticsLabel ??
+        trackedElement.dataset.analytics ??
+        trackedElement.getAttribute("aria-label") ??
+        trackedElement.textContent?.trim() ??
         undefined;
 
       trackEvent("click", currentPagePath, {
         elementLabel: analyticsLabel?.slice(0, 512),
         elementTarget:
-          trackedElement.dataset.analyticsTarget ||
-          href ||
+          trackedElement.dataset.analyticsTarget ??
+          href ??
           undefined,
         elementType:
-          trackedElement.dataset.analyticsType ||
+          trackedElement.dataset.analyticsType ??
           trackedElement.tagName.toLowerCase(),
       });
     };
@@ -208,4 +208,3 @@ export default function AnalyticsTracker() {
 
   return null;
 }
-
