@@ -84,12 +84,20 @@ export default function LandingNavbar() {
             <ThemeSwitcher />
             <Link
               href="/sign-in"
+              data-analytics="nav-sign-in"
+              data-analytics-label="Nav Sign In"
+              data-analytics-target="/sign-in"
+              data-analytics-type="navigation"
               className="text-muted-foreground hover:text-foreground px-2 text-sm font-medium transition-colors"
             >
               Masuk
             </Link>
             <Link
               href="/sign-up"
+              data-analytics="nav-sign-up"
+              data-analytics-label="Nav Sign Up"
+              data-analytics-target="/sign-up"
+              data-analytics-type="navigation"
               className="bg-foreground text-background rounded-full px-5 py-2 text-sm font-medium shadow-sm transition-all hover:opacity-90"
             >
               Daftar
@@ -133,14 +141,26 @@ export default function LandingNavbar() {
           <hr className="border-border/60" />
           <Link
             href="/sign-in"
+            data-analytics="mobile-nav-sign-in"
+            data-analytics-label="Mobile Nav Sign In"
+            data-analytics-target="/sign-in"
+            data-analytics-type="navigation"
             className="text-muted-foreground hover:text-foreground w-full text-left text-sm font-medium transition-colors"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             Masuk
           </Link>
-          <button className="bg-foreground text-background w-full rounded-lg py-3 text-sm font-medium shadow-sm transition-all hover:opacity-90">
+          <Link
+            href="/sign-up"
+            data-analytics="mobile-nav-sign-up"
+            data-analytics-label="Mobile Nav Sign Up"
+            data-analytics-target="/sign-up"
+            data-analytics-type="navigation"
+            className="bg-foreground text-background w-full rounded-lg py-3 text-center text-sm font-medium shadow-sm transition-all hover:opacity-90"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
             Daftar
-          </button>
+          </Link>
         </div>
       )}
     </nav>

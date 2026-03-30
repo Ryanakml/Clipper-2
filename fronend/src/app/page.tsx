@@ -37,6 +37,10 @@ export default function LandingPage() {
           </p>
           <Link
             href="/sign-in"
+            data-analytics="hero-primary-cta"
+            data-analytics-label="Hero Primary CTA"
+            data-analytics-target="/sign-in"
+            data-analytics-type="cta"
             className="group bg-foreground text-background mb-24 flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold shadow-lg shadow-black/5 transition-all hover:scale-[1.02] hover:opacity-90 md:text-base dark:shadow-black/40"
           >
             Try ClipperAI Free
@@ -63,9 +67,16 @@ export default function LandingPage() {
             <p className="text-muted-foreground mb-3 text-sm font-medium">
               Faster than brewing your coffee!
             </p>
-            <button className="text-primary hover:text-primary/80 flex items-center gap-1 text-sm font-semibold transition-colors">
+            <Link
+              href="/sign-in"
+              data-analytics="demo-inline-cta"
+              data-analytics-label="Demo Inline CTA"
+              data-analytics-target="/sign-in"
+              data-analytics-type="cta"
+              className="text-primary hover:text-primary/80 flex items-center gap-1 text-sm font-semibold transition-colors"
+            >
               Create your first clip now <ArrowRight className="h-4 w-4" />
-            </button>
+            </Link>
           </div>
         </section>
 
@@ -209,6 +220,10 @@ export default function LandingPage() {
             </button> */}
             <Link
               href="/sign-in"
+              data-analytics="final-cta"
+              data-analytics-label="Final CTA"
+              data-analytics-target="/sign-in"
+              data-analytics-type="cta"
               className="rounded-full bg-white px-8 py-4 text-lg font-bold text-neutral-950 transition-transform hover:scale-105 hover:bg-neutral-200"
             >
               Sign Up Free Now

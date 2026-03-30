@@ -26,6 +26,8 @@ export const env = createEnv({
     MIDTRANS_SERVER_KEY: z.string(),
     MIDTRANS_CLIENT_KEY: z.string(),
     INNGEST_EVENT_KEY: z.string(),
+    ANALYTICS_SUPABASE_URL: z.string().url().optional(),
+    ANALYTICS_SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   },
 
   /**
@@ -56,6 +58,9 @@ export const env = createEnv({
     MIDTRANS_SERVER_KEY: process.env.MIDTRANS_SERVER_KEY,
     MIDTRANS_CLIENT_KEY: process.env.MIDTRANS_CLIENT_KEY,
     INNGEST_EVENT_KEY: process.env.INNGEST_EVENT_KEY,
+    ANALYTICS_SUPABASE_URL: process.env.ANALYTICS_SUPABASE_URL,
+    ANALYTICS_SUPABASE_SERVICE_ROLE_KEY:
+      process.env.ANALYTICS_SUPABASE_SERVICE_ROLE_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
