@@ -7,11 +7,11 @@ function useCountUp(endValue: number, duration: number, isVisible: boolean) {
 
   useEffect(() => {
     if (!isVisible) return;
-    
+
     let startTimestamp: number | null = null;
-    
+
     const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp;
+      startTimestamp ??= timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
       // easeOutExpo
       const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
@@ -41,7 +41,7 @@ export default function StatsBar() {
           observer.disconnect();
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.5 },
     );
 
     if (sectionRef.current) {
@@ -56,48 +56,46 @@ export default function StatsBar() {
   const hoursCount = useCountUp(10, 1500, isVisible);
 
   return (
-    <section 
-      ref={sectionRef} 
-      className="w-full bg-[var(--bg-surface)] border-y border-[var(--border-subtle)] py-12"
+    <section
+      ref={sectionRef}
+      className="w-full border-y border-[var(--border-subtle)] bg-[var(--bg-surface)] py-12"
     >
-      <div className="mx-auto max-w-5xl px-6 flex flex-col md:flex-row items-center justify-center gap-12 md:gap-0">
-        
+      <div className="mx-auto flex max-w-5xl flex-col items-center justify-center gap-12 px-6 md:flex-row md:gap-0">
         {/* Stat 1 */}
-        <div className="flex-1 flex flex-col items-center text-center">
-          <div className="font-display text-4xl md:text-[48px] font-bold text-[var(--brand-accent)] mb-2 tracking-tight">
+        <div className="flex flex-1 flex-col items-center text-center">
+          <div className="font-display mb-2 text-4xl font-bold tracking-tight text-[var(--brand-accent)] md:text-[48px]">
             {creatorsCount.toLocaleString()}+
           </div>
-          <div className="text-[var(--text-secondary)] text-sm font-medium">
+          <div className="text-sm font-medium text-[var(--text-secondary)]">
             creators using ClipperAI
           </div>
         </div>
 
         {/* Divider */}
-        <div className="hidden md:block w-px h-16 bg-[var(--border-subtle)]"></div>
+        <div className="hidden h-16 w-px bg-[var(--border-subtle)] md:block"></div>
 
         {/* Stat 2 */}
-        <div className="flex-1 flex flex-col items-center text-center">
-          <div className="font-display text-4xl md:text-[48px] font-bold text-[var(--brand-accent)] mb-2 tracking-tight">
+        <div className="flex flex-1 flex-col items-center text-center">
+          <div className="font-display mb-2 text-4xl font-bold tracking-tight text-[var(--brand-accent)] md:text-[48px]">
             {clipsCount.toLocaleString()}+
           </div>
-          <div className="text-[var(--text-secondary)] text-sm font-medium">
+          <div className="text-sm font-medium text-[var(--text-secondary)]">
             clips generated
           </div>
         </div>
 
         {/* Divider */}
-        <div className="hidden md:block w-px h-16 bg-[var(--border-subtle)]"></div>
+        <div className="hidden h-16 w-px bg-[var(--border-subtle)] md:block"></div>
 
         {/* Stat 3 */}
-        <div className="flex-1 flex flex-col items-center text-center">
-          <div className="font-display text-4xl md:text-[48px] font-bold text-[var(--brand-accent)] mb-2 tracking-tight">
+        <div className="flex flex-1 flex-col items-center text-center">
+          <div className="font-display mb-2 text-4xl font-bold tracking-tight text-[var(--brand-accent)] md:text-[48px]">
             {hoursCount.toLocaleString()} hrs
           </div>
-          <div className="text-[var(--text-secondary)] text-sm font-medium">
+          <div className="text-sm font-medium text-[var(--text-secondary)]">
             saved per week on average
           </div>
         </div>
-
       </div>
     </section>
   );

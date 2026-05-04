@@ -311,7 +311,9 @@ export default function LandingPage() {
     if (!node) return;
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
+      (entries) => {
+        const entry = entries[0];
+        if (!entry) return;
         if (entry.isIntersecting && !hasAnimatedStats.current) {
           hasAnimatedStats.current = true;
           const start = performance.now();
@@ -806,8 +808,8 @@ export default function LandingPage() {
                 <div className="relative">
                   <h3 className="text-lg font-semibold">Auto-Framing 9:16</h3>
                   <p className="mt-2 text-sm text-[var(--text-muted)]">
-                    AI tracks the speaker's face throughout the entire clip - no
-                    manual cropping. Ever.
+                    AI tracks the speaker&apos;s face throughout the entire clip
+                    - no manual cropping. Ever.
                   </p>
                   <div className="mt-6 flex items-center gap-6">
                     <div className="relative h-32 w-52 overflow-hidden rounded-2xl border border-white/10 bg-[rgba(13,13,20,0.7)]">
@@ -1026,7 +1028,7 @@ export default function LandingPage() {
                   className="glass-panel hover-glow rounded-3xl p-6"
                 >
                   <div className="text-3xl font-semibold">
-                    {formatNumber(statValues[index], stat.decimals)}
+                    {formatNumber(statValues[index] ?? 0, stat.decimals)}
                     {stat.suffix}
                   </div>
                   <p className="mt-2 text-sm text-[var(--text-muted)]">
@@ -1104,7 +1106,7 @@ export default function LandingPage() {
                 Simple, Creator-Friendly Pricing
               </h2>
               <p className="mt-3 text-base text-[var(--text-muted)]">
-                Start free. Upgrade when you're ready.
+                Start free. Upgrade when you&apos;re ready.
               </p>
             </div>
 
