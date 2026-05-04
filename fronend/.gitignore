@@ -52,4 +52,4 @@ yarn-error.log*
 *.tsbuildinfo
 
 # idea files
-.idea
+.idea.DS_Store

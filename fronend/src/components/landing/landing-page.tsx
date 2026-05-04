@@ -267,9 +267,16 @@ const formatNumber = (value: number, decimals: number) =>
   }).format(value);
 
 export default function LandingPage() {
+  const defaultPersona = personaTabs[0] ?? {
+    id: "default",
+    label: "Default",
+    headline: "",
+    bullets: [],
+    mockTitle: "",
+  };
   const [menuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [activeTab, setActiveTab] = useState(personaTabs[0].id);
+  const [activeTab, setActiveTab] = useState(defaultPersona.id);
   const [isAnnual, setIsAnnual] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [statValues, setStatValues] = useState(stats.map(() => 0));
@@ -327,7 +334,7 @@ export default function LandingPage() {
   }, []);
 
   const activePersona =
-    personaTabs.find((tab) => tab.id === activeTab) ?? personaTabs[0];
+    personaTabs.find((tab) => tab.id === activeTab) ?? defaultPersona;
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[var(--bg-base)] font-sans text-[var(--text-primary)]">
