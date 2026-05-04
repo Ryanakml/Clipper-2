@@ -1,20 +1,48 @@
+"use client";
+
+import Link from "next/link";
+import { Twitter, Instagram, Music2 } from "lucide-react"; // Using Music2 as TikTok approximation
+
 export default function Footer() {
   return (
-    <footer className="border-white/10 bg-neutral-950 text-neutral-200 border-t">
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 py-10 md:flex-row">
-        <span className="text-neutral-300 text-sm font-medium">
+    <footer className="w-full bg-[var(--bg-base)] border-t border-[var(--border-subtle)] py-8 px-6">
+      <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
+        
+        {/* Left: Copyright */}
+        <div className="text-[var(--text-muted)] text-sm font-medium">
           © 2025 ClipperAI. All rights reserved.
-        </span>
-        <div className="text-neutral-400 flex gap-8 text-sm font-semibold">
-          <a href="#" className="hover:text-white transition-colors">
-            Privacy
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
-            Terms
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
-            Contact
-          </a>
+        </div>
+
+        {/* Right: Links & Socials */}
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          {/* Links */}
+          <div className="flex items-center gap-6 text-sm font-medium">
+            <Link href="/privacy" className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
+              Privacy
+            </Link>
+            <Link href="/terms" className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
+              Terms
+            </Link>
+            <Link href="/contact" className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
+              Contact
+            </Link>
+          </div>
+
+          {/* Vertical Divider (Desktop) */}
+          <div className="hidden md:block w-px h-4 bg-[var(--border-subtle)]"></div>
+
+          {/* Social Icons */}
+          <div className="flex items-center gap-4">
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors" aria-label="Twitter">
+              <Twitter className="w-[18px] h-[18px]" />
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors" aria-label="Instagram">
+              <Instagram className="w-[18px] h-[18px]" />
+            </a>
+            <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors" aria-label="TikTok">
+              <Music2 className="w-[18px] h-[18px]" />
+            </a>
+          </div>
         </div>
       </div>
     </footer>
