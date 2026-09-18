@@ -2,9 +2,9 @@ import LandingPage from "~/components/landing/landing-page";
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "ClipperAI - Turn One Long Video Into Viral Clips",
+  title: "Find the moments worth sharing",
   description:
-    "AI-powered video clipping tool. Upload a long YouTube video, Zoom recording, or podcast — AI finds the best moments and creates vertical short clips.",
+    "Upload a long video and turn its best moments into sharp vertical clips for Shorts, Reels, and TikTok.",
 };
 
 export default function LandingPageRoute() {

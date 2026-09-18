@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { Scissors } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
@@ -18,31 +18,24 @@ import AppThemeSwitcher from "../theme-switcher";
 
 const NavHeader = ({ credits, email }: { credits: number; email: string }) => {
   return (
-    <header className="bg-background sticky top-0 z-10 flex justify-center border-b">
-      <div className="container flex h-16 items-center justify-between px-4 py-2">
+    <header className="sticky top-0 z-10 flex justify-center border-b border-white/[0.08] bg-[#0d0d14]/90 backdrop-blur-xl">
+      <div className="container flex h-[72px] items-center justify-between px-4 py-2">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="relative h-8 w-8">
-            <Image
-              src="/favicon.ico"
-              alt="Clipper logo"
-              fill
-              className="rounded-md"
-              sizes="32px"
-              priority
-            />
+          <div className="grid size-8 place-items-center rounded-[10px] bg-gradient-to-br from-violet-400 to-fuchsia-500 shadow-lg shadow-violet-500/25">
+            <Scissors className="size-4 text-slate-950" strokeWidth={2.8} />
           </div>
-          <div className="font-sans text-xl font-semibold tracking-tight">
-            ClipperAI
+          <div className="font-sans text-lg font-semibold tracking-[-0.04em] text-white">
+            clipper<span className="text-violet-300">.ai</span>
           </div>
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <div className="flex items-center gap-2">
             <AppThemeSwitcher />
 
             <Badge
               variant="secondary"
-              className="h-8 px-3 py-1.5 text-xs font-medium"
+              className="h-8 border border-violet-400/20 bg-violet-400/10 px-3 py-1.5 text-xs font-medium text-violet-200"
             >
               {credits} credits
             </Badge>

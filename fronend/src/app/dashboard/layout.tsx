@@ -26,9 +26,14 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col" suppressHydrationWarning>
+    <div
+      className="flex min-h-screen flex-col bg-[#0d0d14]"
+      suppressHydrationWarning
+    >
       <NavHeader credits={user.credits} email={user.email} />
-      <main className="container mx-auto flex-1 py-6">{children}</main>
+      <main className="container mx-auto flex-1 px-4 py-6 sm:py-8">
+        {children}
+      </main>
       <Toaster />
     </div>
   );
